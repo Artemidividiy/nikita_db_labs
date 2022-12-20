@@ -32,21 +32,30 @@ class Interface:
     vars: list(n, m+1) - table with **column names**
     example:
     ```python
-        interface.print_debug_table([["name", a, b], ["age", 12, 24]])
+        interface.debug_output_table([["name", a, b], ["age", 12, 24]])
     ```
     | name | age |
     | a    | 12  |
     | b    | 24  |
     """
 
-    def print_debug_table(self, vars: list):
+    def debug_output_table(self, vars: list):
         self.console.log("print_debud_table method: [green] start [/green]")
         target = Table()
+        if (len(vars)) > 10:
+            for i in range(5, len(vars) - 5): 
+                vars.remove(i)
         for i in range(len(vars)):
                 target.add_column(f'{vars[i][0]}')
             # что я высрал еб твою мать
         for i in range(1, len(vars)): 
             target.add_row(*[str(vars[_][i]) for _ in range(len(vars[i]))])
-        
+        self.console.log("print_debud_table method: [green] end [/green]\n")
             
         self.console.print(target)
+
+    def debug_output_obj(self, value: object):
+        try:
+            self.console.print(str(obj))
+        except:
+            self.console.log(self.console.log(f"debug_output_obj method: [red] error [/red]\nno convert to string for object of type {type(value)}")) 
