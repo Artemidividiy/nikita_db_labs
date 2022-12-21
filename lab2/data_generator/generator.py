@@ -15,7 +15,7 @@ profiles = ("продуктовый", "галантерейный", "канце�
 positions = ("директор", "уборщик", "менеджер")
 
 OWNER_COUNT = 100
-COOPERATIVE_COUNT = 100
+COOPERATIVE_COUNT = 10000
 PARTNERSHIP_COUNT = 1000
 WORKER_COUNT = 1000
 PASSPORT_COUNT = OWNER_COUNT + WORKER_COUNT
