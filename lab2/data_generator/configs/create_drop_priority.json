@@ -1,0 +1,8 @@
+{
+  "cooperatives": { "create": 2, "drop": 4 },
+  "owners": { "create": 3, "drop": 5 },
+  "partnerships": { "create": 4, "drop": 3 },
+  "passports": { "create": 1, "drop": 6 },
+  "worker_cooperatives": { "create": 6, "drop": 1 },
+  "workers": { "create": 5, "drop": 2 }
+}

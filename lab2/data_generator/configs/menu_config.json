@@ -1,7 +1,9 @@
 {
   "0": "exit the program",
-  "b": "1231",
-  "c": "1231",
-  "d": "1231",
-  "e": 123131
+  "1": "generate all",
+  "2": "create all",
+  "3": "create owners",
+  "4": "create partnerships", 
+  "5": "create workers",
+  "6": "create worker-cooperative connections"
 }
