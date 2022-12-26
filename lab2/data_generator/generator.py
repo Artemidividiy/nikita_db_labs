@@ -7,6 +7,7 @@ from datetime import datetime
 from rich.progress import track
 import json
 import psycopg2
+from psycopg2.extensions import AsIs
 from os.path import isfile, join
 from os import listdir
 currencies = ("рубль(ей)", "доллар(ов)", "евро", "юань(и)")
@@ -16,9 +17,20 @@ positions = ("директор", "уборщик", "менеджер")
 
 OWNER_COUNT = 10000
 COOPERATIVE_COUNT = 100_000
-PARTNERSHIP_COUNT = 100_000_000
+PARTNERSHIP_COUNT = 100_000
 WORKER_COUNT = 10000
 PASSPORT_COUNT = OWNER_COUNT + WORKER_COUNT
+
+MAX_DATES_FOR_MONTS = {
+    1: 31, 2: 28,
+    3: 31, 4: 30,
+    5: 31, 6: 30,
+    7: 31, 8: 31,
+    9: 30, 10: 31,
+    11: 30, 12: 31
+}
+
+# todo: сгенерированы паспорты, кооперативы, владельцы, партнерства, 
 
 
 class FakerWrapper:
@@ -38,18 +50,46 @@ class FakerWrapper:
 
     def generate_name(self): return self.faker.name()
 
-    def generate_date_time(self): return self.faker.date_object()
+    def generate_date_time(self):
+        current_moment = datetime.now()
+        year = random.randint(1999, current_moment.year)
+        if year is current_moment.year:
+            month = random.randint(1, current_moment.month)
+        else:
+            month = random.randint(1, 12)
+        if (month == current_moment.month):
+            day = random.randint(1, current_moment.day)
+        else:
+            day = random.randint(1, MAX_DATES_FOR_MONTS[month])
+        if day == current_moment.day:
+            hour = random.randint(0, current_moment.hour)
+        else:
+            hour = random.randint(0, 23)
+        if hour == current_moment.hour:
+            minute = random.randint(0, current_moment.minute)
+        else:
+            minute = random.randint(0, 59)
+        if minute == current_moment.minute:
+            second = random.randint(0, current_moment.second)
+        else:
+            second = random.randint(0, 59)
+        return datetime(year=year, month=month, day=day, hour=hour, minute=minute, second=second)
 
     def generate_job(self): return self.faker.job()
 
 
 class DBWorker:
     def __init__(self, host, port, database_name, user) -> None:
+        self.logger = Logger()
         self.connection = psycopg2.connect(
             dbname=database_name, user=user, port=port, host=host)
         self.cursor = self.connection.cursor()
         self.connection.autocommit = True
 
+    def drop_table():
+        pass
+    def delete_table_content(self, table_name: str):
+        self.cursor.execute("delete from %s;", (AsIs(table_name),))
     def drop_all(self):
         try:
             self.cursor.execute("""drop table public.cooperatives cascade;""")
@@ -97,7 +137,8 @@ class DBWorker:
                 """INSERT INTO public.passports(
 	first_name, middle_name, last_name, place_code, date_given, series, "number", id)
 	VALUES (%s, %s, %s, %s, %s, %s, %s, %s);""", (tmp.name, tmp.middle_name, tmp.last_name, tmp.place_code, tmp.data_given, tmp.series, tmp.number, i))
-        Console().log(f"[green] {self.fill_passports} done [/green] in [yellow] {datetime.now() - t} [/yellow] ")
+        Console().log(
+            f"[green] {self.fill_passports} done [/green] in [yellow] {datetime.now() - t} [/yellow] ")
 
     def fill_cooperatives(self):
         t = datetime.now()
@@ -133,9 +174,11 @@ class DBWorker:
         t = datetime.now()
         for i in track(range(PARTNERSHIP_COUNT), description="Generating partnerships"):
             tmp = Partnership()
+            # self.logger.write_data([f"generated partnership: {i}\n"])
             self.cursor.execute("""INSERT INTO public.partnerships(
 	id, owner, cooperative, date, registration_data, pie_size)
 	VALUES (%s, %s, %s, %s, %s, %s);""", (i, tmp.owner, tmp.cooperative, tmp.date, tmp.registration_data, tmp.pie_size))
+        # self.logger.write_data([f"inserted into database\n"])
         Console().log(f"done in [yellow] {datetime.now() - t}")
 
     def fill_worker_cooperatives(self):
@@ -261,6 +304,7 @@ class Partnership:
 class Interface:
     def __init__(self):
         self.console = Console()
+        
         self.db_worker = DBWorker(
             host="127.0.0.1", port="8014", user="postgres", database_name="labs")
 
@@ -316,21 +360,25 @@ class Interface:
                 self.console.clear()
                 self.select_variant()
             case "3":
+                self.db_worker.delete_table_content("owners")
                 self.db_worker.fill_owners()
                 input()
                 self.console.clear()
                 self.select_variant()
             case "4":
+                self.db_worker.delete_table_content("partnerships")
                 self.db_worker.fill_partnerships()
                 input()
                 self.console.clear()
                 self.select_variant()
             case "5":
+                self.db_worker.delete_table_content("workers")
                 self.db_worker.fill_workers()
                 input()
                 self.console.clear()
                 self.select_variant()
             case "6":
+                self.db_worker.delete_table_content("workers_cooperatives")
                 self.db_worker.fill_worker_cooperatives()
                 input()
                 self.console.clear()
@@ -370,3 +418,14 @@ class Interface:
         except:
             self.console.log(self.console.log(
                 f"debug_output_obj method: [red] error [/red]\nno convert to string for object of type {type(value)}"))
+
+
+class Logger: 
+    def __init__(self) -> None:
+        pass
+    
+    def write_data(self, *content): 
+         with open(f"{datetime.now().year}_{datetime.now().month}_{datetime.now().day}_log.txt", 'a') as f:
+            f.writelines(f"{datetime.now()} {content}")
+
+   
