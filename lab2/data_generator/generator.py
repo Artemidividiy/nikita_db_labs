@@ -14,10 +14,10 @@ profiles = ("продуктовый", "галантерейный", "канце�
             "сапожный", "машиностроительный", "фермерский")
 positions = ("директор", "уборщик", "менеджер")
 
-OWNER_COUNT = 100
-COOPERATIVE_COUNT = 10000
-PARTNERSHIP_COUNT = 1000
-WORKER_COUNT = 1000
+OWNER_COUNT = 10000
+COOPERATIVE_COUNT = 100_000
+PARTNERSHIP_COUNT = 100_000_000
+WORKER_COUNT = 10000
 PASSPORT_COUNT = OWNER_COUNT + WORKER_COUNT
 
 
@@ -65,23 +65,23 @@ class DBWorker:
     def create_all(self):
         self.drop_all()
         create_files = [f for f in listdir(
-            "./scripts") if isfile(join("./scripts", f))]
-        with open("./scripts/create_passports.sql", 'r') as f:
+            "./lab2/scripts") if isfile(join("./scripts", f))]
+        with open("./lab2/scripts/create_passports.sql", 'r') as f:
             self.cursor.execute(f.read())
             f.close()
-        with open("./scripts/create_cooperatives.sql", 'r') as f:
+        with open("./lab2/scripts/create_cooperatives.sql", 'r') as f:
             self.cursor.execute(f.read())
             f.close()
-        with open("./scripts/create_owners.sql", 'r') as f:
+        with open("./lab2/scripts/create_owners.sql", 'r') as f:
             self.cursor.execute(f.read())
             f.close()
-        with open("./scripts/create_partnerships.sql", 'r') as f:
+        with open("./lab2/scripts/create_partnerships.sql", 'r') as f:
             self.cursor.execute(f.read())
             f.close()
-        with open("./scripts/create_workers.sql", 'r') as f:
+        with open("./lab2/scripts/create_workers.sql", 'r') as f:
             self.cursor.execute(f.read())
             f.close()
-        with open("./scripts/create_worker_cooperatives.sql", 'r') as f:
+        with open("./lab2/scripts/create_worker_cooperatives.sql", 'r') as f:
             self.cursor.execute(f.read())
             f.close()
         # for i in track(range(len(create_files))):
@@ -253,6 +253,7 @@ class Partnership:
         self.cooperative = random.randint(1, COOPERATIVE_COUNT - 1)
         self.owner = random.randint(1, OWNER_COUNT - 1)
         self.registration_data = random.randint(1, 1000000)
+        # TODO: слишком долго, оптимизировать
         self.date = FakerWrapper().generate_date_time()
         self.pie_size = random.randint(1, 1000) / 1000
 
@@ -282,7 +283,7 @@ class Interface:
         table_of_choice = Table(title="Generator menu")
         table_of_choice.add_column("hotkey", style=Style(color="green"))
         table_of_choice.add_column("description")
-        with open("./data_generator/configs/menu_config.json", 'r')as f:
+        with open("./lab2/data_generator/configs/menu_config.json", 'r')as f:
             try:
                 self.hotkeys = json.load(fp=f)
                 print(self.hotkeys)
